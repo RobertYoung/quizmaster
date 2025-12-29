@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { QuizProvider } from './context/QuizContext'
 import { ScoreProvider } from './context/ScoreContext'
 import Home from './pages/Home'
@@ -8,8 +8,28 @@ import Results from './pages/Results'
 
 type Page = 'home' | 'setup' | 'quiz' | 'results'
 
+const STORAGE_KEY = 'quizmaster-page-state'
+const VALID_PAGES: Page[] = ['home', 'setup', 'quiz', 'results']
+
+function getInitialPage(): Page {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved && VALID_PAGES.includes(saved as Page)) {
+      return saved as Page
+    }
+  } catch {
+    // localStorage not available
+  }
+  return 'home'
+}
+
 function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('home')
+  const [currentPage, setCurrentPage] = useState<Page>(getInitialPage)
+
+  // Save page state to localStorage on changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, currentPage)
+  }, [currentPage])
 
   const renderPage = () => {
     switch (currentPage) {
