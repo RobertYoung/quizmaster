@@ -95,6 +95,16 @@ export default function QuestionCard({ question, isAnswerRevealed, categoryColor
             Fun fact: {question.funFact}
           </p>
         )}
+        {question.sourceUrl && (
+          <a
+            href={question.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-4 text-emerald-200 hover:text-white text-sm underline underline-offset-2 transition-colors"
+          >
+            Source ↗
+          </a>
+        )}
       </motion.div>
     </motion.div>
   )
