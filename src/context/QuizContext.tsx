@@ -9,6 +9,7 @@ interface QuizState {
   currentCategoryIndex: number
   currentQuestionIndex: number
   isAnswerRevealed: boolean
+  showingSectionIntro: boolean
   categories: CategoryWithQuestions[]
 }
 
@@ -22,12 +23,14 @@ type QuizAction =
   | { type: 'FINISH_QUIZ' }
   | { type: 'RESET_QUIZ' }
   | { type: 'RESTORE_STATE'; payload: Partial<QuizState> }
+  | { type: 'DISMISS_SECTION_INTRO' }
 
 const initialState: QuizState = {
   status: 'setup',
   currentCategoryIndex: 0,
   currentQuestionIndex: 0,
   isAnswerRevealed: false,
+  showingSectionIntro: false,
   categories: defaultCategories,
 }
 
@@ -47,6 +50,7 @@ function getInitialState(): QuizState {
         currentCategoryIndex: categoryIndex,
         currentQuestionIndex: questionIndex,
         isAnswerRevealed: parsed.isAnswerRevealed ?? false,
+        showingSectionIntro: parsed.showingSectionIntro ?? false,
         categories: defaultCategories,
       }
     }
@@ -59,7 +63,7 @@ function getInitialState(): QuizState {
 function quizReducer(state: QuizState, action: QuizAction): QuizState {
   switch (action.type) {
     case 'START_QUIZ':
-      return { ...state, status: 'playing' }
+      return { ...state, status: 'playing', showingSectionIntro: true }
 
     case 'NEXT_QUESTION': {
       const currentCategory = state.categories[state.currentCategoryIndex]
@@ -76,6 +80,7 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
           currentCategoryIndex: state.currentCategoryIndex + 1,
           currentQuestionIndex: 0,
           isAnswerRevealed: false,
+          showingSectionIntro: true,
         }
       }
 
@@ -102,6 +107,7 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
           currentCategoryIndex: state.currentCategoryIndex - 1,
           currentQuestionIndex: prevCategory.questions.length - 1,
           isAnswerRevealed: false,
+          showingSectionIntro: true,
         }
       }
 
@@ -120,10 +126,14 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
         currentCategoryIndex: action.payload,
         currentQuestionIndex: 0,
         isAnswerRevealed: false,
+        showingSectionIntro: true,
       }
 
     case 'FINISH_QUIZ':
       return { ...state, status: 'finished' }
+
+    case 'DISMISS_SECTION_INTRO':
+      return { ...state, showingSectionIntro: false }
 
     case 'RESET_QUIZ':
       localStorage.removeItem(STORAGE_KEY)
@@ -162,9 +172,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       currentCategoryIndex: state.currentCategoryIndex,
       currentQuestionIndex: state.currentQuestionIndex,
       isAnswerRevealed: state.isAnswerRevealed,
+      showingSectionIntro: state.showingSectionIntro,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
-  }, [state.status, state.currentCategoryIndex, state.currentQuestionIndex, state.isAnswerRevealed])
+  }, [state.status, state.currentCategoryIndex, state.currentQuestionIndex, state.isAnswerRevealed, state.showingSectionIntro])
 
   const currentCategory = state.categories[state.currentCategoryIndex] ?? null
   const currentQuestion = currentCategory?.questions[state.currentQuestionIndex] ?? null
