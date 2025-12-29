@@ -1,6 +1,8 @@
-import { createContext, useContext, useReducer, ReactNode } from 'react'
+import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react'
 import { CategoryWithQuestions } from '../types'
 import { categories as defaultCategories } from '../data/questions'
+
+const STORAGE_KEY = 'quizmaster-quiz-state'
 
 interface QuizState {
   status: 'setup' | 'playing' | 'finished'
@@ -19,6 +21,7 @@ type QuizAction =
   | { type: 'GO_TO_CATEGORY'; payload: number }
   | { type: 'FINISH_QUIZ' }
   | { type: 'RESET_QUIZ' }
+  | { type: 'RESTORE_STATE'; payload: Partial<QuizState> }
 
 const initialState: QuizState = {
   status: 'setup',
@@ -26,6 +29,31 @@ const initialState: QuizState = {
   currentQuestionIndex: 0,
   isAnswerRevealed: false,
   categories: defaultCategories,
+}
+
+function getInitialState(): QuizState {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      // Validate indices are within bounds
+      const maxCategoryIndex = defaultCategories.length - 1
+      const categoryIndex = Math.min(parsed.currentCategoryIndex ?? 0, maxCategoryIndex)
+      const maxQuestionIndex = defaultCategories[categoryIndex].questions.length - 1
+      const questionIndex = Math.min(parsed.currentQuestionIndex ?? 0, maxQuestionIndex)
+
+      return {
+        status: parsed.status ?? 'setup',
+        currentCategoryIndex: categoryIndex,
+        currentQuestionIndex: questionIndex,
+        isAnswerRevealed: parsed.isAnswerRevealed ?? false,
+        categories: defaultCategories,
+      }
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEY)
+  }
+  return initialState
 }
 
 function quizReducer(state: QuizState, action: QuizAction): QuizState {
@@ -98,7 +126,15 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
       return { ...state, status: 'finished' }
 
     case 'RESET_QUIZ':
+      localStorage.removeItem(STORAGE_KEY)
       return initialState
+
+    case 'RESTORE_STATE':
+      return {
+        ...state,
+        ...action.payload,
+        categories: defaultCategories, // Always use current categories
+      }
 
     default:
       return state
@@ -117,7 +153,18 @@ interface QuizContextValue {
 const QuizContext = createContext<QuizContextValue | null>(null)
 
 export function QuizProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(quizReducer, initialState)
+  const [state, dispatch] = useReducer(quizReducer, null, getInitialState)
+
+  // Save state to localStorage on changes
+  useEffect(() => {
+    const toSave = {
+      status: state.status,
+      currentCategoryIndex: state.currentCategoryIndex,
+      currentQuestionIndex: state.currentQuestionIndex,
+      isAnswerRevealed: state.isAnswerRevealed,
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+  }, [state.status, state.currentCategoryIndex, state.currentQuestionIndex, state.isAnswerRevealed])
 
   const currentCategory = state.categories[state.currentCategoryIndex] ?? null
   const currentQuestion = currentCategory?.questions[state.currentQuestionIndex] ?? null

@@ -12,9 +12,8 @@ interface QuizProps {
 
 export default function Quiz({ onFinish }: QuizProps) {
   const { state, dispatch, currentCategory, currentQuestion, totalQuestions, currentQuestionNumber } = useQuiz()
-  const { state: scoreState, awardPoints } = useScore()
+  const { state: scoreState, toggleQuestionAward, getQuestionAwards } = useScore()
   const [showScoreboard, setShowScoreboard] = useState(false)
-  const [scoringTeamId, setScoringTeamId] = useState<string | null>(null)
 
   useEffect(() => {
     if (state.status === 'setup') {
@@ -65,12 +64,14 @@ export default function Quiz({ onFinish }: QuizProps) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [state.isAnswerRevealed, dispatch])
 
-  const handleAwardPoints = (teamId: string) => {
+  const handleTogglePoints = (teamId: string) => {
     if (currentCategory && currentQuestion) {
-      awardPoints(teamId, currentCategory.id, currentQuestion.points)
-      setScoringTeamId(null)
+      toggleQuestionAward(teamId, currentQuestion.id, currentCategory.id, currentQuestion.points)
     }
   }
+
+  const questionAwards = currentQuestion ? getQuestionAwards(currentQuestion.id) : []
+  const awardedTeamIds = new Set(questionAwards.map((a) => a.teamId))
 
   if (!currentCategory || !currentQuestion) {
     return null
@@ -116,6 +117,44 @@ export default function Quiz({ onFinish }: QuizProps) {
               categoryColor={currentCategory.color}
             />
           </AnimatePresence>
+
+          {/* Inline Team Scoring */}
+          {state.isAnswerRevealed && scoreState.teams.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 flex flex-wrap justify-center gap-3"
+            >
+              <span className="w-full text-center text-slate-400 text-sm mb-2">
+                Award {currentQuestion.points} points:
+              </span>
+              {scoreState.teams.map((team) => {
+                const isAwarded = awardedTeamIds.has(team.id)
+                return (
+                  <button
+                    key={team.id}
+                    onClick={() => handleTogglePoints(team.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                      isAwarded
+                        ? 'bg-green-600 hover:bg-green-700 ring-2 ring-green-400'
+                        : 'bg-slate-700 hover:bg-slate-600'
+                    }`}
+                  >
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: team.color }}
+                    />
+                    <span className="text-white font-medium">{team.name}</span>
+                    {isAwarded && (
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                )
+              })}
+            </motion.div>
+          )}
         </div>
       </main>
 
@@ -125,7 +164,6 @@ export default function Quiz({ onFinish }: QuizProps) {
         onHide={() => dispatch({ type: 'HIDE_ANSWER' })}
         onNext={() => dispatch({ type: 'NEXT_QUESTION' })}
         onPrevious={() => dispatch({ type: 'PREVIOUS_QUESTION' })}
-        onAwardPoints={() => setScoringTeamId('selecting')}
         isAnswerRevealed={state.isAnswerRevealed}
         canGoPrevious={currentQuestionNumber > 1}
         canGoNext={true}
@@ -135,52 +173,6 @@ export default function Quiz({ onFinish }: QuizProps) {
       <AnimatePresence>
         {showScoreboard && (
           <Scoreboard onClose={() => setShowScoreboard(false)} />
-        )}
-      </AnimatePresence>
-
-      {/* Award Points Modal */}
-      <AnimatePresence>
-        {scoringTeamId === 'selecting' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
-            onClick={() => setScoringTeamId(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-slate-800 rounded-xl p-6 max-w-md w-full mx-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-xl font-bold text-white mb-4">
-                Award {currentQuestion.points} points to:
-              </h3>
-              <div className="space-y-2">
-                {scoreState.teams.map((team) => (
-                  <button
-                    key={team.id}
-                    onClick={() => handleAwardPoints(team.id)}
-                    className="w-full flex items-center gap-3 p-4 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
-                  >
-                    <div
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: team.color }}
-                    />
-                    <span className="text-white font-medium">{team.name}</span>
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setScoringTeamId(null)}
-                className="w-full mt-4 p-3 text-slate-400 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-            </motion.div>
-          </motion.div>
         )}
       </AnimatePresence>
     </div>

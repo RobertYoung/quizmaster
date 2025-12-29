@@ -3,7 +3,6 @@ interface HostControlsProps {
   onHide: () => void
   onNext: () => void
   onPrevious: () => void
-  onAwardPoints: () => void
   isAnswerRevealed: boolean
   canGoPrevious: boolean
   canGoNext: boolean
@@ -14,7 +13,6 @@ export default function HostControls({
   onHide,
   onNext,
   onPrevious,
-  onAwardPoints,
   isAnswerRevealed,
   canGoPrevious,
 }: HostControlsProps) {
@@ -44,15 +42,6 @@ export default function HostControls({
             {isAnswerRevealed ? 'Hide Answer' : 'Reveal Answer'}
             <span className="ml-2 text-sm opacity-75">(Space)</span>
           </button>
-
-          {isAnswerRevealed && (
-            <button
-              onClick={onAwardPoints}
-              className="bg-violet-500 hover:bg-violet-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-            >
-              Award Points
-            </button>
-          )}
         </div>
 
         {/* Next Button */}
