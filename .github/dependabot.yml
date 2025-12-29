@@ -1,0 +1,59 @@
+# Dependabot configuration for automated dependency updates
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Update npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    # Limit the number of open pull requests
+    open-pull-requests-limit: 10
+    # Group patch updates together to reduce PR noise
+    groups:
+      # Group all patch and minor updates together
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+    # Customize commit messages
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # Reviewers and assignees
+    reviewers:
+      - "RobertYoung"
+    # Labels for categorization
+    labels:
+      - "dependencies"
+      - "automated"
+    # Ignore major version updates for React (handle manually)
+    ignore:
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+
+  # Update GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+    reviewers:
+      - "RobertYoung"
+    labels:
+      - "github-actions"
+      - "automated"
