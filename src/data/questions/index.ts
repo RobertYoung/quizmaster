@@ -28,6 +28,7 @@ export const categories: CategoryWithQuestions[] = [
         correctOptionIndex: 1,
         answer: 'Australia',
         points: 10,
+        sourceUrl: 'https://en.wikipedia.org/wiki/2025_Rugby_World_Cup',
       },
       {
         id: 'sports-3',
@@ -112,6 +113,7 @@ export const categories: CategoryWithQuestions[] = [
         questionText: 'Which festival celebrated its 50th anniversary in 2025?',
         answer: 'Glastonbury',
         points: 10,
+        sourceUrl: 'https://en.wikipedia.org/wiki/Glastonbury_Festival',
       },
     ],
   },
@@ -142,6 +144,7 @@ export const categories: CategoryWithQuestions[] = [
         correctOptionIndex: 0,
         answer: 'Netflix',
         points: 10,
+        sourceUrl: 'https://en.wikipedia.org/wiki/Netflix',
       },
       {
         id: 'movies-3',

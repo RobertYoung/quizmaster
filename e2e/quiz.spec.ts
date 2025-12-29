@@ -142,6 +142,52 @@ test.describe("Quizmaster App", () => {
     await expect(page.getByRole("heading", { name: "Quizmaster" })).toBeVisible();
   });
 
+  test("displays source link when answer is revealed for questions with sourceUrl", async ({ page }) => {
+    await page.goto("/");
+
+    // Setup quiz with one team
+    await page.getByRole("button", { name: "Start Quiz" }).click();
+    await page.getByRole("textbox").fill("Test Team");
+    await page.getByRole("button", { name: "Add" }).click();
+    await page.getByRole("button", { name: "Start Quiz" }).click();
+
+    // Navigate to question 2 (sports-2 has sourceUrl)
+    await page.getByRole("button", { name: /Next/ }).click();
+    await expect(page.getByText("Question 2 of 15")).toBeVisible();
+
+    // Source link should not be visible before reveal
+    await expect(page.getByRole("link", { name: "Source" })).not.toBeVisible();
+
+    // Reveal answer
+    await page.getByRole("button", { name: /Reveal Answer/ }).click();
+
+    // Source link should now be visible
+    const sourceLink = page.getByRole("link", { name: "Source" });
+    await expect(sourceLink).toBeVisible();
+    await expect(sourceLink).toHaveAttribute("href", "https://en.wikipedia.org/wiki/2025_Rugby_World_Cup");
+    await expect(sourceLink).toHaveAttribute("target", "_blank");
+    await expect(sourceLink).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  test("does not display source link for questions without sourceUrl", async ({ page }) => {
+    await page.goto("/");
+
+    // Setup quiz with one team
+    await page.getByRole("button", { name: "Start Quiz" }).click();
+    await page.getByRole("textbox").fill("Test Team");
+    await page.getByRole("button", { name: "Add" }).click();
+    await page.getByRole("button", { name: "Start Quiz" }).click();
+
+    // Question 1 (sports-1) does not have sourceUrl
+    await expect(page.getByText("Question 1 of 15")).toBeVisible();
+
+    // Reveal answer
+    await page.getByRole("button", { name: /Reveal Answer/ }).click();
+
+    // Source link should not be visible
+    await expect(page.getByRole("link", { name: "Source" })).not.toBeVisible();
+  });
+
   test.describe("Settings Menu", () => {
     test("settings button is visible on home page", async ({ page }) => {
       await page.goto("/");

@@ -7,6 +7,7 @@ export interface BaseQuestion {
   points: number
   hint?: string
   funFact?: string
+  sourceUrl?: string
 }
 
 export interface TextQuestion extends BaseQuestion {
