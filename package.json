@@ -17,10 +17,10 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@semantic-release/git": "^10.0.1",
-    "semantic-release": "^24.2.0",
     "@eslint/js": "^9.17.0",
     "@playwright/test": "^1.57.0",
+    "@semantic-release/git": "^10.0.1",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^5.1.2",
@@ -30,6 +30,7 @@
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^16.5.0",
     "postcss": "^8.4.49",
+    "semantic-release": "^24.2.0",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.51.0",
