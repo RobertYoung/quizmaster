@@ -9,6 +9,8 @@ pnpm dev      # Start development server (http://localhost:5173)
 pnpm build    # TypeScript check + production build
 pnpm lint     # Run ESLint
 pnpm preview  # Preview production build
+pnpm test     # Run Playwright tests
+pnpm test:ui  # Run Playwright tests with interactive UI
 ```
 
 ## Architecture
@@ -17,13 +19,13 @@ Quizmaster is a presentation-style quiz app built with React + TypeScript + Vite
 
 ### Page Flow
 
-`App.tsx` manages page state directly (no router). Flow: Home → Setup → Quiz → Results
+`App.tsx` manages page state directly (no router). Flow: Home → Setup → Quiz (with section intros between categories) → Results
 
 ### State Management
 
 Two React Context providers wrap the app:
 
-- **QuizContext** (`src/context/QuizContext.tsx`) - Quiz navigation state: current category/question indices, answer reveal state. Uses `useReducer` with actions like `NEXT_QUESTION`, `REVEAL_ANSWER`, `GO_TO_CATEGORY`.
+- **QuizContext** (`src/context/QuizContext.tsx`) - Quiz navigation state: current category/question indices, answer reveal state, section intro display, and question set selection. Uses `useReducer` with actions like `NEXT_QUESTION`, `REVEAL_ANSWER`, `GO_TO_CATEGORY`, `SELECT_QUESTION_SET`, `DISMISS_SECTION_INTRO`.
 
 - **ScoreContext** (`src/context/ScoreContext.tsx`) - Team management and scoring. Handles adding teams, awarding points per category, and leaderboard calculation.
 
@@ -36,10 +38,17 @@ Defined in `src/types/question.ts`. Three question types supported:
 
 ### Question Data
 
-Questions live in `src/data/questions/index.ts` as a `CategoryWithQuestions[]` array. Each category has an id, name, icon, color, and questions array.
+Questions are organized into **Question Sets**, each containing categories with questions:
+
+- `src/data/questions/registry.ts` - Central registry of all question sets
+- `src/data/questions/sets/` - Individual question set files (e.g., `christmas-2025.ts`, `football-2025.ts`)
+- `src/data/questions/index.ts` - Re-exports registry functions and provides backward compatibility
+
+Each `QuestionSet` has: id, name, description, icon, and a `categories` array. Each category has: id, name, description, icon, color, questionCount, and a `questions` array.
 
 ### Key Components
 
 - `QuestionCard` - Renders question based on type, handles answer reveal animation
-- `HostControls` - Bottom bar with Previous/Reveal/Next buttons and keyboard hint
+- `HostControls` - Fixed bottom bar with Previous/Reveal/Next buttons and keyboard hint
 - `Scoreboard` - Modal overlay showing team rankings
+- `SectionIntro` - Category intro page shown before each category's questions
