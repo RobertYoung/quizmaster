@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuiz } from '../../context/QuizContext'
 import { useScore } from '../../context/ScoreContext'
+import QuestionSetSelector from './QuestionSetSelector'
 
 interface SettingsMenuProps {
   onResetGame: () => void
@@ -10,13 +11,22 @@ interface SettingsMenuProps {
 export default function SettingsMenu({ onResetGame }: SettingsMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const { dispatch: quizDispatch } = useQuiz()
+  const [showQuestionSetSelector, setShowQuestionSetSelector] = useState(false)
+  const { state, dispatch: quizDispatch, selectQuestionSet } = useQuiz()
   const { dispatch: scoreDispatch } = useScore()
 
   const handleReset = () => {
     quizDispatch({ type: 'RESET_QUIZ' })
     scoreDispatch({ type: 'RESET_SCORES' })
     setShowConfirm(false)
+    setIsOpen(false)
+    onResetGame()
+  }
+
+  const handleQuestionSetSelect = (id: string) => {
+    selectQuestionSet(id)
+    scoreDispatch({ type: 'RESET_SCORES' })
+    setShowQuestionSetSelector(false)
     setIsOpen(false)
     onResetGame()
   }
@@ -52,8 +62,30 @@ export default function SettingsMenu({ onResetGame }: SettingsMenuProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden"
+              className="absolute right-0 mt-2 w-56 bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden"
             >
+              <button
+                onClick={() => {
+                  setShowQuestionSetSelector(true)
+                  setIsOpen(false)
+                }}
+                className="w-full px-4 py-3 text-left text-slate-300 hover:bg-slate-700 transition-colors flex items-center gap-3"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                </svg>
+                Change Question Set
+              </button>
               <button
                 onClick={() => setShowConfirm(true)}
                 className="w-full px-4 py-3 text-left text-red-400 hover:bg-slate-700 transition-colors flex items-center gap-3"
@@ -126,6 +158,13 @@ export default function SettingsMenu({ onResetGame }: SettingsMenuProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <QuestionSetSelector
+        isOpen={showQuestionSetSelector}
+        onClose={() => setShowQuestionSetSelector(false)}
+        currentSetId={state.questionSetId}
+        onSelect={handleQuestionSetSelect}
+      />
     </>
   )
 }
