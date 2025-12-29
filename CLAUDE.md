@@ -5,10 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev      # Start development server (http://localhost:5173)
-npm run build    # TypeScript check + production build
-npm run lint     # Run ESLint
-npm run preview  # Preview production build
+pnpm dev      # Start development server (http://localhost:5173)
+pnpm build    # TypeScript check + production build
+pnpm lint     # Run ESLint
+pnpm preview  # Preview production build
 ```
 
 ## Architecture
