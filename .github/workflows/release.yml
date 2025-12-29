@@ -2,29 +2,25 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
-  build:
-    name: Build Release Assets
+  release:
+    name: Release
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Get version from tag
-        id: version
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Version: ${VERSION}"
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -32,7 +28,7 @@ jobs:
           version: 9
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
@@ -40,50 +36,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build production
+      - name: Build
         run: pnpm build
 
-      - name: Create release archive
-        run: |
-          cd dist
-          tar -czf ../quizmaster-${{ steps.version.outputs.version }}.tar.gz .
-          cd ..
-          zip -r quizmaster-${{ steps.version.outputs.version }}.zip dist/
-
-      - name: Generate artifact checksums
-        run: |
-          sha256sum quizmaster-${{ steps.version.outputs.version }}.tar.gz > checksums.txt
-          sha256sum quizmaster-${{ steps.version.outputs.version }}.zip >> checksums.txt
-          cat checksums.txt
-
-      - name: Generate changelog
-        run: |
-          PREVIOUS_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
-
-          if [ -z "$PREVIOUS_TAG" ]; then
-            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
-          else
-            CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
-          fi
-
-          echo "## Changes" > CHANGELOG.md
-          echo "" >> CHANGELOG.md
-          echo "$CHANGELOG" >> CHANGELOG.md
-          echo "" >> CHANGELOG.md
-          echo "## Checksums" >> CHANGELOG.md
-          echo "" >> CHANGELOG.md
-          echo '```' >> CHANGELOG.md
-          cat checksums.txt >> CHANGELOG.md
-          echo '```' >> CHANGELOG.md
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            quizmaster-${{ steps.version.outputs.version }}.tar.gz
-            quizmaster-${{ steps.version.outputs.version }}.zip
-            checksums.txt
-          body_path: CHANGELOG.md
-          draft: false
-          prerelease: ${{ contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'rc') }}
-          fail_on_unmatched_files: true
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
