@@ -24,3 +24,7 @@ npm-debug.log*
 *.sln
 *.sw?
 .DS_Store
+
+# Playwright
+playwright-report/
+test-results/
