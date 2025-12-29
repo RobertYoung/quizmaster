@@ -141,4 +141,145 @@ test.describe("Quizmaster App", () => {
 
     await expect(page.getByRole("heading", { name: "Quizmaster" })).toBeVisible();
   });
+
+  test.describe("Settings Menu", () => {
+    test("settings button is visible on home page", async ({ page }) => {
+      await page.goto("/");
+
+      await expect(page.getByRole("button", { name: "Settings" })).toBeVisible();
+    });
+
+    test("settings button opens dropdown menu", async ({ page }) => {
+      await page.goto("/");
+
+      await page.getByRole("button", { name: "Settings" }).click();
+
+      await expect(page.getByRole("button", { name: "Reset Game" })).toBeVisible();
+    });
+
+    test("clicking outside closes settings dropdown", async ({ page }) => {
+      await page.goto("/");
+
+      await page.getByRole("button", { name: "Settings" }).click();
+      await expect(page.getByRole("button", { name: "Reset Game" })).toBeVisible();
+
+      // Click outside the dropdown
+      await page.locator("body").click({ position: { x: 100, y: 300 } });
+
+      await expect(page.getByRole("button", { name: "Reset Game" })).not.toBeVisible();
+    });
+
+    test("reset game shows confirmation modal", async ({ page }) => {
+      await page.goto("/");
+
+      await page.getByRole("button", { name: "Settings" }).click();
+      await page.getByRole("button", { name: "Reset Game" }).click();
+
+      await expect(page.getByRole("heading", { name: "Reset Game?" })).toBeVisible();
+      await expect(page.getByText("This will clear all teams, scores, and progress")).toBeVisible();
+      await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Reset", exact: true })).toBeVisible();
+    });
+
+    test("cancel button closes confirmation modal without resetting", async ({ page }) => {
+      await page.goto("/");
+
+      // Setup a team first
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+      await page.getByRole("textbox").fill("Test Team");
+      await page.getByRole("button", { name: "Add" }).click();
+
+      // Open settings and show confirmation
+      await page.getByRole("button", { name: "Settings" }).click();
+      await page.getByRole("button", { name: "Reset Game" }).click();
+
+      // Cancel
+      await page.getByRole("button", { name: "Cancel" }).click();
+
+      // Modal should be closed
+      await expect(page.getByRole("heading", { name: "Reset Game?" })).not.toBeVisible();
+
+      // Team should still exist
+      await expect(page.getByText("Test Team")).toBeVisible();
+    });
+
+    test("reset game clears teams and returns to home", async ({ page }) => {
+      await page.goto("/");
+
+      // Setup teams and start quiz
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+      await page.getByRole("textbox").fill("Team Alpha");
+      await page.getByRole("button", { name: "Add" }).click();
+      await page.getByRole("textbox").fill("Team Beta");
+      await page.getByRole("button", { name: "Add" }).click();
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+
+      // Verify we're on quiz page
+      await expect(page.getByText("Question 1 of 15")).toBeVisible();
+
+      // Reset game
+      await page.getByRole("button", { name: "Settings" }).click();
+      await page.getByRole("button", { name: "Reset Game" }).click();
+      await page.getByRole("button", { name: "Reset", exact: true }).click();
+
+      // Should be back on home page
+      await expect(page.getByRole("heading", { name: "Quizmaster" })).toBeVisible();
+
+      // Go to setup and verify teams are cleared
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+      await expect(page.getByRole("heading", { name: "Team Setup" })).toBeVisible();
+      await expect(page.getByText("Team Alpha")).not.toBeVisible();
+      await expect(page.getByText("Team Beta")).not.toBeVisible();
+
+      // Start Quiz button should be disabled (no teams)
+      await expect(page.getByRole("button", { name: "Start Quiz" })).toBeDisabled();
+    });
+
+    test("reset game clears scores", async ({ page }) => {
+      await page.goto("/");
+
+      // Setup team and award points
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+      await page.getByRole("textbox").fill("Scoring Team");
+      await page.getByRole("button", { name: "Add" }).click();
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+
+      // Reveal answer and award points
+      await page.getByRole("button", { name: /Reveal Answer/ }).click();
+      await page.getByRole("button", { name: "Scoring Team" }).click();
+
+      // Verify points were awarded
+      await page.getByRole("button", { name: /Scoreboard/ }).click();
+      await expect(page.getByText("10", { exact: true })).toBeVisible();
+      await page.getByRole("button", { name: "✕" }).click();
+
+      // Reset game
+      await page.getByRole("button", { name: "Settings" }).click();
+      await page.getByRole("button", { name: "Reset Game" }).click();
+      await page.getByRole("button", { name: "Reset", exact: true }).click();
+
+      // Setup new team and check scoreboard
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+      await page.getByRole("textbox").fill("New Team");
+      await page.getByRole("button", { name: "Add" }).click();
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+
+      // Check scoreboard shows no scores
+      await page.getByRole("button", { name: /Scoreboard/ }).click();
+      await expect(page.getByText("0", { exact: true })).toBeVisible();
+    });
+
+    test("settings is accessible from quiz page", async ({ page }) => {
+      await page.goto("/");
+
+      // Setup and start quiz
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+      await page.getByRole("textbox").fill("Test Team");
+      await page.getByRole("button", { name: "Add" }).click();
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+
+      // Settings should be visible on quiz page
+      await expect(page.getByRole("button", { name: "Settings" })).toBeVisible();
+    });
+  });
 });

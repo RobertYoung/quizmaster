@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Setup from './pages/Setup'
 import Quiz from './pages/Quiz'
 import Results from './pages/Results'
+import SettingsMenu from './components/settings/SettingsMenu'
 
 type Page = 'home' | 'setup' | 'quiz' | 'results'
 
@@ -50,6 +51,7 @@ function App() {
     <QuizProvider>
       <ScoreProvider>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+          <SettingsMenu onResetGame={() => setCurrentPage('home')} />
           {renderPage()}
         </div>
       </ScoreProvider>
