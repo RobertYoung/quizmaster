@@ -11,6 +11,20 @@ A presentation-style quiz web application for hosting pub quiz nights and trivia
 - **Answer Animations** - Smooth reveal animations for dramatic effect
 - **Responsive Design** - Large typography optimized for group viewing
 
+## Screenshots
+
+| Home | Team Setup |
+|------|------------|
+| ![Home](screenshots/01-home.png) | ![Team Setup](screenshots/02-setup.png) |
+
+| Quiz Question | Answer Revealed |
+|---------------|-----------------|
+| ![Question](screenshots/03-question.png) | ![Answer](screenshots/04-answer.png) |
+
+| Scoreboard | Results |
+|------------|---------|
+| ![Scoreboard](screenshots/05-scoreboard.png) | ![Results](screenshots/06-results.png) |
+
 ## Getting Started
 
 ```bash
