@@ -17,7 +17,7 @@ export default function HostControls({
   canGoPrevious,
 }: HostControlsProps) {
   return (
-    <footer className="bg-slate-800/80 backdrop-blur-sm border-t border-slate-700 p-4">
+    <footer className="fixed bottom-0 left-0 right-0 z-40 bg-slate-800/80 backdrop-blur-sm border-t border-slate-700 p-4">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
         {/* Previous Button */}
         <button

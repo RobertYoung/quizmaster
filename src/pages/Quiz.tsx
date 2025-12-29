@@ -117,7 +117,7 @@ export default function Quiz({ onFinish }: QuizProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-32">
       {/* Header */}
       <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
