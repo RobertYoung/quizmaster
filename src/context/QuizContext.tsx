@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react'
 import { CategoryWithQuestions } from '../types'
-import { categories as defaultCategories } from '../data/questions'
+import { getQuestionSetById, getDefaultQuestionSet } from '../data/questions'
 
 const STORAGE_KEY = 'quizmaster-quiz-state'
 
@@ -10,6 +10,7 @@ interface QuizState {
   currentQuestionIndex: number
   isAnswerRevealed: boolean
   showingSectionIntro: boolean
+  questionSetId: string
   categories: CategoryWithQuestions[]
 }
 
@@ -24,6 +25,9 @@ type QuizAction =
   | { type: 'RESET_QUIZ' }
   | { type: 'RESTORE_STATE'; payload: Partial<QuizState> }
   | { type: 'DISMISS_SECTION_INTRO' }
+  | { type: 'SELECT_QUESTION_SET'; payload: string }
+
+const defaultQuestionSet = getDefaultQuestionSet()
 
 const initialState: QuizState = {
   status: 'setup',
@@ -31,7 +35,8 @@ const initialState: QuizState = {
   currentQuestionIndex: 0,
   isAnswerRevealed: false,
   showingSectionIntro: false,
-  categories: defaultCategories,
+  questionSetId: defaultQuestionSet.id,
+  categories: defaultQuestionSet.categories,
 }
 
 function getInitialState(): QuizState {
@@ -39,10 +44,16 @@ function getInitialState(): QuizState {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved)
+
+      // Load question set (fall back to default if not found)
+      const questionSetId = parsed.questionSetId ?? defaultQuestionSet.id
+      const questionSet = getQuestionSetById(questionSetId) ?? defaultQuestionSet
+      const categories = questionSet.categories
+
       // Validate indices are within bounds
-      const maxCategoryIndex = defaultCategories.length - 1
+      const maxCategoryIndex = categories.length - 1
       const categoryIndex = Math.min(parsed.currentCategoryIndex ?? 0, maxCategoryIndex)
-      const maxQuestionIndex = defaultCategories[categoryIndex].questions.length - 1
+      const maxQuestionIndex = categories[categoryIndex].questions.length - 1
       const questionIndex = Math.min(parsed.currentQuestionIndex ?? 0, maxQuestionIndex)
 
       return {
@@ -51,7 +62,8 @@ function getInitialState(): QuizState {
         currentQuestionIndex: questionIndex,
         isAnswerRevealed: parsed.isAnswerRevealed ?? false,
         showingSectionIntro: parsed.showingSectionIntro ?? false,
-        categories: defaultCategories,
+        questionSetId: questionSet.id,
+        categories,
       }
     }
   } catch {
@@ -137,14 +149,29 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
 
     case 'RESET_QUIZ':
       localStorage.removeItem(STORAGE_KEY)
-      return initialState
+      return {
+        ...initialState,
+        questionSetId: state.questionSetId,
+        categories: state.categories,
+      }
 
     case 'RESTORE_STATE':
       return {
         ...state,
         ...action.payload,
-        categories: defaultCategories, // Always use current categories
+        categories: state.categories, // Always use current categories
       }
+
+    case 'SELECT_QUESTION_SET': {
+      const questionSet = getQuestionSetById(action.payload)
+      if (!questionSet) return state
+
+      return {
+        ...initialState,
+        questionSetId: questionSet.id,
+        categories: questionSet.categories,
+      }
+    }
 
     default:
       return state
@@ -158,6 +185,7 @@ interface QuizContextValue {
   currentQuestion: CategoryWithQuestions['questions'][number] | null
   totalQuestions: number
   currentQuestionNumber: number
+  selectQuestionSet: (id: string) => void
 }
 
 const QuizContext = createContext<QuizContextValue | null>(null)
@@ -173,9 +201,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       currentQuestionIndex: state.currentQuestionIndex,
       isAnswerRevealed: state.isAnswerRevealed,
       showingSectionIntro: state.showingSectionIntro,
+      questionSetId: state.questionSetId,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
-  }, [state.status, state.currentCategoryIndex, state.currentQuestionIndex, state.isAnswerRevealed, state.showingSectionIntro])
+  }, [state.status, state.currentCategoryIndex, state.currentQuestionIndex, state.isAnswerRevealed, state.showingSectionIntro, state.questionSetId])
 
   const currentCategory = state.categories[state.currentCategoryIndex] ?? null
   const currentQuestion = currentCategory?.questions[state.currentQuestionIndex] ?? null
@@ -188,6 +217,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   }
   currentQuestionNumber += state.currentQuestionIndex + 1
 
+  const selectQuestionSet = (id: string) => {
+    dispatch({ type: 'SELECT_QUESTION_SET', payload: id })
+  }
+
   return (
     <QuizContext.Provider
       value={{
@@ -197,6 +230,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         currentQuestion,
         totalQuestions,
         currentQuestionNumber,
+        selectQuestionSet,
       }}
     >
       {children}

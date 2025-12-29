@@ -34,12 +34,12 @@ test.describe("Quizmaster App", () => {
 
     // Section intro page should show first
     await expect(page.getByText("Coming Up")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Sports" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Christmas Movies" })).toBeVisible();
     await page.getByRole("button", { name: "Start Section" }).click();
 
     // Quiz page - Question 1
     await expect(page.getByText("Question 1 of 15")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Sports" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Christmas Movies" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Previous/ })).toBeDisabled();
 
     // Reveal answer
@@ -64,24 +64,24 @@ test.describe("Quizmaster App", () => {
     await expect(page.getByRole("button", { name: /Previous/ })).toBeEnabled();
 
     // Navigate to end of quiz (handling section intros between categories)
-    // Sports has 5 questions, we're on Q2, so 3 more to finish Sports
+    // Christmas Movies has 5 questions, we're on Q2, so 3 more to finish Christmas Movies
     for (let i = 0; i < 3; i++) {
       await page.getByRole("button", { name: /Next/ }).click();
     }
-    // Next click goes to Music section intro
+    // Next click goes to Christmas Music section intro
     await page.getByRole("button", { name: /Next/ }).click();
     await expect(page.getByText("Coming Up")).toBeVisible();
     await page.getByRole("button", { name: "Start Section" }).click();
 
-    // Music has 5 questions
+    // Christmas Music has 5 questions
     for (let i = 0; i < 5; i++) {
       await page.getByRole("button", { name: /Next/ }).click();
     }
-    // Next click goes to Movies & TV section intro
+    // Next click goes to Holiday Traditions section intro
     await expect(page.getByText("Coming Up")).toBeVisible();
     await page.getByRole("button", { name: "Start Section" }).click();
 
-    // Movies & TV has 5 questions, navigate through all to finish
+    // Holiday Traditions has 5 questions, navigate through all to finish
     for (let i = 0; i < 5; i++) {
       await page.getByRole("button", { name: /Next/ }).click();
     }
@@ -181,7 +181,7 @@ test.describe("Quizmaster App", () => {
     // Dismiss section intro
     await page.getByRole("button", { name: "Start Section" }).click();
 
-    // Navigate to question 2 (sports-2 has sourceUrl)
+    // Navigate to question 2 (xmas-movies-2 has sourceUrl)
     await page.getByRole("button", { name: /Next/ }).click();
     await expect(page.getByText("Question 2 of 15")).toBeVisible();
 
@@ -194,7 +194,7 @@ test.describe("Quizmaster App", () => {
     // Source link should now be visible
     const sourceLink = page.getByRole("link", { name: "Source" });
     await expect(sourceLink).toBeVisible();
-    await expect(sourceLink).toHaveAttribute("href", "https://en.wikipedia.org/wiki/2025_Rugby_World_Cup");
+    await expect(sourceLink).toHaveAttribute("href", "https://en.wikipedia.org/wiki/Elf_(film)");
     await expect(sourceLink).toHaveAttribute("target", "_blank");
     await expect(sourceLink).toHaveAttribute("rel", "noopener noreferrer");
   });
@@ -386,7 +386,7 @@ test.describe("Quizmaster App", () => {
 
       // Section intro should be visible
       await expect(page.getByText("Coming Up")).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Sports" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Christmas Movies" })).toBeVisible();
       await expect(page.getByText("5 questions")).toBeVisible();
       await expect(page.getByRole("button", { name: "Start Section" })).toBeVisible();
       await expect(page.getByRole("button", { name: /Leaderboard/ })).toBeVisible();
@@ -486,9 +486,9 @@ test.describe("Quizmaster App", () => {
         await page.getByRole("button", { name: /Next/ }).click();
       }
 
-      // Should show section intro for next category (Music)
+      // Should show section intro for next category (Christmas Music)
       await expect(page.getByText("Coming Up")).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Music" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Christmas Music" })).toBeVisible();
     });
   });
 });
