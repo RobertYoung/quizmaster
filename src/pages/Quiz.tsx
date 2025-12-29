@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useQuiz } from '../context/QuizContext'
 import { useScore } from '../context/ScoreContext'
 import QuestionCard from '../components/quiz/QuestionCard'
+import SectionIntro from '../components/quiz/SectionIntro'
 import HostControls from '../components/navigation/HostControls'
 import Scoreboard from '../components/scoring/Scoreboard'
 
@@ -31,6 +32,17 @@ export default function Quiz({ onFinish }: QuizProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return
+
+      // Handle section intro dismissal
+      if (state.showingSectionIntro) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault()
+          dispatch({ type: 'DISMISS_SECTION_INTRO' })
+        } else if (e.key === 's') {
+          setShowScoreboard((prev) => !prev)
+        }
+        return
+      }
 
       switch (e.key) {
         case ' ':
@@ -62,7 +74,7 @@ export default function Quiz({ onFinish }: QuizProps) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [state.isAnswerRevealed, dispatch])
+  }, [state.isAnswerRevealed, state.showingSectionIntro, dispatch])
 
   const handleTogglePoints = (teamId: string) => {
     if (currentCategory && currentQuestion) {
@@ -73,7 +85,34 @@ export default function Quiz({ onFinish }: QuizProps) {
   const questionAwards = currentQuestion ? getQuestionAwards(currentQuestion.id) : []
   const awardedTeamIds = new Set(questionAwards.map((a) => a.teamId))
 
-  if (!currentCategory || !currentQuestion) {
+  if (!currentCategory) {
+    return null
+  }
+
+  // Show section intro when entering a new category
+  if (state.showingSectionIntro) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          <SectionIntro
+            key={`section-${currentCategory.id}`}
+            category={currentCategory}
+            onStart={() => dispatch({ type: 'DISMISS_SECTION_INTRO' })}
+            onShowScoreboard={() => setShowScoreboard(true)}
+          />
+        </AnimatePresence>
+
+        {/* Scoreboard Overlay */}
+        <AnimatePresence>
+          {showScoreboard && (
+            <Scoreboard onClose={() => setShowScoreboard(false)} />
+          )}
+        </AnimatePresence>
+      </div>
+    )
+  }
+
+  if (!currentQuestion) {
     return null
   }
 
