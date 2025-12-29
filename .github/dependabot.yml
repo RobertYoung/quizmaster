@@ -13,15 +13,38 @@ updates:
       timezone: "UTC"
     # Limit the number of open pull requests
     open-pull-requests-limit: 10
-    # Group patch updates together to reduce PR noise
+    # Group dependencies by package type
     groups:
-      # Group all patch and minor updates together
-      patch-updates:
+      # Production dependencies
+      production:
+        dependency-type: "production"
+      # TypeScript type definitions
+      types:
         patterns:
-          - "*"
-        update-types:
-          - "patch"
-          - "minor"
+          - "@types/*"
+      # Linting and code quality tools
+      linting:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+          - "prettier*"
+          - "globals"
+      # Build tools and bundlers
+      build:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "typescript"
+          - "typescript-eslint"
+          - "postcss"
+          - "autoprefixer"
+          - "tailwindcss"
+      # Testing frameworks
+      testing:
+        patterns:
+          - "@playwright/*"
+          - "vitest"
+          - "@testing-library/*"
     # Customize commit messages
     commit-message:
       prefix: "chore(deps)"
