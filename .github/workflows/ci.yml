@@ -1,6 +1,5 @@
 name: CI
 
-# Trigger on pull requests and pushes to main branch
 on:
   push:
     branches:
@@ -9,7 +8,6 @@ on:
     branches:
       - main
 
-# Restrict permissions to minimum required (security best practice)
 permissions:
   contents: read
 
@@ -18,87 +16,17 @@ jobs:
     name: Lint and Build
     runs-on: ubuntu-latest
 
-    # Add security hardening with StepSecurity harden-runner
-    # This monitors network calls and file writes to detect supply chain attacks
-    permissions:
-      contents: read
-
     steps:
-      # Step 1: Harden the runner environment (StepSecurity best practice)
-      - name: Harden Runner
-        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
-        with:
-          egress-policy: audit
-          # Allowed endpoints will be learned during audit mode
-          # After initial runs, switch to 'block' mode and specify allowed endpoints
-
-      # Step 2: Checkout code with minimal permissions
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
-
-      # Step 3: Setup pnpm package manager
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
-        with:
-          version: 9
-
-      # Step 4: Setup Node.js LTS with caching
-      - name: Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
-        with:
-          node-version: '20' # LTS version as of 2025
-          cache: 'pnpm'
-
-      # Step 5: Install dependencies
-      # Using frozen-lockfile ensures reproducible builds
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # Step 6: Run ESLint
-      - name: Run lint
-        run: pnpm lint
-
-      # Step 7: Build the project (includes TypeScript type checking)
-      - name: Build project
-        run: pnpm build
-
-      # Step 8: Upload build artifacts for verification
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f0e1b5e95c # v4.5.0
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
-          if-no-files-found: error
-
-  # Playwright E2E tests job (runs in parallel with lint-and-build)
-  e2e-tests:
-    name: E2E Tests
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
-        with:
-          egress-policy: audit
-
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
       - name: Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
@@ -106,17 +34,50 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Install Playwright browsers with system dependencies
+      - name: Run lint
+        run: pnpm lint
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
 
-      # Run Playwright tests
       - name: Run Playwright tests
         run: pnpm test
 
-      # Upload test results for debugging failures
       - name: Upload Playwright Report
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f0e1b5e95c # v4.5.0
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
