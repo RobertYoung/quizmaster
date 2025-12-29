@@ -40,11 +40,9 @@ test.describe("Quizmaster App", () => {
     // Reveal answer
     await page.getByRole("button", { name: /Reveal Answer/ }).click();
     await expect(page.getByRole("button", { name: /Hide Answer/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Award Points" })).toBeVisible();
 
-    // Award points to Team Alpha
-    await page.getByRole("button", { name: "Award Points" }).click();
-    await expect(page.getByRole("heading", { name: /Award.*points to/ })).toBeVisible();
+    // Award points to Team Alpha using inline scoring buttons
+    await expect(page.getByText("Award 10 points:")).toBeVisible();
     await page.getByRole("button", { name: "Team Alpha" }).click();
 
     // Check scoreboard
