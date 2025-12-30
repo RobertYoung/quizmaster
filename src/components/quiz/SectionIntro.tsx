@@ -5,9 +5,11 @@ interface SectionIntroProps {
   category: CategoryWithQuestions
   onStart: () => void
   onShowScoreboard: () => void
+  onPrevious?: () => void
+  canGoPrevious?: boolean
 }
 
-export default function SectionIntro({ category, onStart, onShowScoreboard }: SectionIntroProps) {
+export default function SectionIntro({ category, onStart, onShowScoreboard, onPrevious, canGoPrevious = false }: SectionIntroProps) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -69,6 +71,16 @@ export default function SectionIntro({ category, onStart, onShowScoreboard }: Se
         transition={{ delay: 0.7 }}
         className="flex gap-4"
       >
+        {canGoPrevious && onPrevious && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onPrevious}
+            className="px-8 py-4 text-xl font-semibold text-white rounded-xl bg-slate-700 hover:bg-slate-600 transition-colors"
+          >
+            ← Previous
+          </motion.button>
+        )}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -94,7 +106,7 @@ export default function SectionIntro({ category, onStart, onShowScoreboard }: Se
         transition={{ delay: 1 }}
         className="text-slate-500 text-sm mt-6"
       >
-        Press Space or Enter to continue
+        Press Space or Enter to continue{canGoPrevious ? ' • ← to go back' : ''}
       </motion.p>
     </motion.div>
   )

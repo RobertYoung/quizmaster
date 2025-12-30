@@ -104,6 +104,22 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
     }
 
     case 'PREVIOUS_QUESTION': {
+      // Handle going back from section intro
+      if (state.showingSectionIntro) {
+        if (state.currentCategoryIndex > 0) {
+          const prevCategory = state.categories[state.currentCategoryIndex - 1]
+          return {
+            ...state,
+            currentCategoryIndex: state.currentCategoryIndex - 1,
+            currentQuestionIndex: prevCategory.questions.length - 1,
+            isAnswerRevealed: false,
+            showingSectionIntro: false,
+          }
+        }
+        // On first category's intro, can't go back further
+        return state
+      }
+
       if (state.currentQuestionIndex > 0) {
         return {
           ...state,
