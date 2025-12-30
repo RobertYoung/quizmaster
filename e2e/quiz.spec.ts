@@ -34,12 +34,12 @@ test.describe("Quizmaster App", () => {
 
     // Section intro page should show first
     await expect(page.getByText("Coming Up")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Christmas Movies" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "General Knowledge" })).toBeVisible();
     await page.getByRole("button", { name: "Start Section" }).click();
 
     // Quiz page - Question 1
-    await expect(page.getByText("Question 1 of 15")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Christmas Movies" })).toBeVisible();
+    await expect(page.getByText("Question 1 of 5")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "General Knowledge" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Previous/ })).toBeDisabled();
 
     // Reveal answer
@@ -58,31 +58,22 @@ test.describe("Quizmaster App", () => {
 
     // Navigate to next question
     await page.getByRole("button", { name: /Next/ }).click();
-    await expect(page.getByText("Question 2 of 15")).toBeVisible();
+    await expect(page.getByText("Question 2 of 5")).toBeVisible();
 
     // Previous button should now be enabled
     await expect(page.getByRole("button", { name: /Previous/ })).toBeEnabled();
 
-    // Navigate to end of quiz (handling section intros between categories)
-    // Christmas Movies has 5 questions, we're on Q2, so 3 more to finish Christmas Movies
-    for (let i = 0; i < 3; i++) {
-      await page.getByRole("button", { name: /Next/ }).click();
-    }
-    // Next click goes to Christmas Music section intro
+    // Navigate to end of first category (General Knowledge has 3 questions, we're on Q2, so 1 more)
+    await page.getByRole("button", { name: /Next/ }).click();
+
+    // Next click goes to Science section intro
     await page.getByRole("button", { name: /Next/ }).click();
     await expect(page.getByText("Coming Up")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Science" })).toBeVisible();
     await page.getByRole("button", { name: "Start Section" }).click();
 
-    // Christmas Music has 5 questions
-    for (let i = 0; i < 5; i++) {
-      await page.getByRole("button", { name: /Next/ }).click();
-    }
-    // Next click goes to Holiday Traditions section intro
-    await expect(page.getByText("Coming Up")).toBeVisible();
-    await page.getByRole("button", { name: "Start Section" }).click();
-
-    // Holiday Traditions has 5 questions, navigate through all to finish
-    for (let i = 0; i < 5; i++) {
+    // Navigate through Science (2 questions) to finish the quiz
+    for (let i = 0; i < 2; i++) {
       await page.getByRole("button", { name: /Next/ }).click();
     }
 
@@ -128,11 +119,11 @@ test.describe("Quizmaster App", () => {
 
     // Test right arrow navigates forward
     await page.keyboard.press("ArrowRight");
-    await expect(page.getByText("Question 2 of 15")).toBeVisible();
+    await expect(page.getByText("Question 2 of 5")).toBeVisible();
 
     // Test left arrow navigates back
     await page.keyboard.press("ArrowLeft");
-    await expect(page.getByText("Question 1 of 15")).toBeVisible();
+    await expect(page.getByText("Question 1 of 5")).toBeVisible();
 
     // Test S key opens scoreboard
     await page.keyboard.press("s");
@@ -189,9 +180,9 @@ test.describe("Quizmaster App", () => {
     // Dismiss section intro
     await page.getByRole("button", { name: "Start Section" }).click();
 
-    // Navigate to question 2 (xmas-movies-2 has sourceUrl)
+    // Navigate to question 2 (gk-2 has sourceUrl for Mars)
     await page.getByRole("button", { name: /Next/ }).click();
-    await expect(page.getByText("Question 2 of 15")).toBeVisible();
+    await expect(page.getByText("Question 2 of 5")).toBeVisible();
 
     // Source link should not be visible before reveal
     await expect(page.getByRole("link", { name: "Source" })).not.toBeVisible();
@@ -202,7 +193,7 @@ test.describe("Quizmaster App", () => {
     // Source link should now be visible
     const sourceLink = page.getByRole("link", { name: "Source" });
     await expect(sourceLink).toBeVisible();
-    await expect(sourceLink).toHaveAttribute("href", "https://en.wikipedia.org/wiki/Elf_(film)");
+    await expect(sourceLink).toHaveAttribute("href", "https://en.wikipedia.org/wiki/Mars");
     await expect(sourceLink).toHaveAttribute("target", "_blank");
     await expect(sourceLink).toHaveAttribute("rel", "noopener noreferrer");
   });
@@ -219,8 +210,8 @@ test.describe("Quizmaster App", () => {
     // Dismiss section intro
     await page.getByRole("button", { name: "Start Section" }).click();
 
-    // Question 1 (sports-1) does not have sourceUrl
-    await expect(page.getByText("Question 1 of 15")).toBeVisible();
+    // Question 1 (gk-1) does not have sourceUrl
+    await expect(page.getByText("Question 1 of 5")).toBeVisible();
 
     // Reveal answer
     await page.getByRole("button", { name: /Reveal Answer/ }).click();
@@ -305,7 +296,7 @@ test.describe("Quizmaster App", () => {
       await page.getByRole("button", { name: "Start Section" }).click();
 
       // Verify we're on quiz page
-      await expect(page.getByText("Question 1 of 15")).toBeVisible();
+      await expect(page.getByText("Question 1 of 5")).toBeVisible();
 
       // Reset game
       await page.getByRole("button", { name: "Settings" }).click();
@@ -394,8 +385,8 @@ test.describe("Quizmaster App", () => {
 
       // Section intro should be visible
       await expect(page.getByText("Coming Up")).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Christmas Movies" })).toBeVisible();
-      await expect(page.getByText("5 questions")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "General Knowledge" })).toBeVisible();
+      await expect(page.getByText("3 questions")).toBeVisible();
       await expect(page.getByRole("button", { name: "Start Section" })).toBeVisible();
       await expect(page.getByRole("button", { name: /Leaderboard/ })).toBeVisible();
     });
@@ -413,7 +404,7 @@ test.describe("Quizmaster App", () => {
       await page.getByRole("button", { name: "Start Section" }).click();
 
       // Should now see the quiz question
-      await expect(page.getByText("Question 1 of 15")).toBeVisible();
+      await expect(page.getByText("Question 1 of 5")).toBeVisible();
       await expect(page.getByText("Coming Up")).not.toBeVisible();
     });
 
@@ -431,7 +422,7 @@ test.describe("Quizmaster App", () => {
       await page.keyboard.press("Enter");
 
       // Should now see the quiz question
-      await expect(page.getByText("Question 1 of 15")).toBeVisible();
+      await expect(page.getByText("Question 1 of 5")).toBeVisible();
     });
 
     test("shows leaderboard from section intro", async ({ page }) => {
@@ -489,14 +480,14 @@ test.describe("Quizmaster App", () => {
       // Dismiss first section intro
       await page.getByRole("button", { name: "Start Section" }).click();
 
-      // Navigate through all questions in first category (5 questions)
-      for (let i = 0; i < 5; i++) {
+      // Navigate through all questions in first category (General Knowledge has 3 questions)
+      for (let i = 0; i < 3; i++) {
         await page.getByRole("button", { name: /Next/ }).click();
       }
 
-      // Should show section intro for next category (Christmas Music)
+      // Should show section intro for next category (Science)
       await expect(page.getByText("Coming Up")).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Christmas Music" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Science" })).toBeVisible();
     });
   });
 
@@ -510,22 +501,16 @@ test.describe("Quizmaster App", () => {
       await page.getByRole("button", { name: "Add" }).click();
       await page.getByRole("button", { name: "Start Quiz" }).click();
 
-      // Navigate through all questions
-      // Christmas Movies (5 questions)
+      // Navigate through all questions (Example Quiz: 2 categories, 5 questions total)
+      // General Knowledge (3 questions)
       await page.getByRole("button", { name: "Start Section" }).click();
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 3; i++) {
         await page.getByRole("button", { name: /Next/ }).click();
       }
 
-      // Christmas Music (5 questions)
+      // Science (2 questions)
       await page.getByRole("button", { name: "Start Section" }).click();
-      for (let i = 0; i < 5; i++) {
-        await page.getByRole("button", { name: /Next/ }).click();
-      }
-
-      // Holiday Traditions (5 questions)
-      await page.getByRole("button", { name: "Start Section" }).click();
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 2; i++) {
         await page.getByRole("button", { name: /Next/ }).click();
       }
     }
@@ -551,22 +536,20 @@ test.describe("Quizmaster App", () => {
       await page.getByRole("button", { name: "Add" }).click();
       await page.getByRole("button", { name: "Start Quiz" }).click();
 
-      // Navigate through all questions
+      // Navigate through all questions (Example Quiz: 2 categories, 5 questions total)
+      // General Knowledge (3 questions)
       await page.getByRole("button", { name: "Start Section" }).click();
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 3; i++) {
         await page.getByRole("button", { name: /Next/ }).click();
       }
+      // Science (2 questions)
       await page.getByRole("button", { name: "Start Section" }).click();
-      for (let i = 0; i < 5; i++) {
-        await page.getByRole("button", { name: /Next/ }).click();
-      }
-      await page.getByRole("button", { name: "Start Section" }).click();
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 2; i++) {
         await page.getByRole("button", { name: /Next/ }).click();
       }
 
       // Check summary displays correct team count
-      await expect(page.getByText("15 questions answered by 2 teams")).toBeVisible();
+      await expect(page.getByText("5 questions answered by 2 teams")).toBeVisible();
     });
 
     test("navigates to results with Reveal Scores button", async ({ page }) => {

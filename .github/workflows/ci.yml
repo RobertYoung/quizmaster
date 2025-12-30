@@ -56,6 +56,7 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -80,11 +81,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build project
+        run: pnpm build
+
       - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Run Playwright tests
         run: pnpm test
+        env:
+          # Ensure unbuffered output for real-time logging
+          PLAYWRIGHT_FORCE_TTY: "0"
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -93,3 +100,11 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+      - name: Upload test screenshots on failure
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: failure()
+        with:
+          name: test-screenshots
+          path: test-results/
+          retention-days: 7
