@@ -12,16 +12,16 @@ test.describe("Question Sets", () => {
     test("displays default question set on home page", async ({ page }) => {
       await page.goto("/");
 
-      // Default set should be Christmas 2025
-      await expect(page.getByText("Christmas 2025")).toBeVisible();
-      await expect(page.getByText("3 categories, 15 questions")).toBeVisible();
+      // Default set should be Example Quiz
+      await expect(page.getByText("Example Quiz")).toBeVisible();
+      await expect(page.getByText("2 categories, 5 questions")).toBeVisible();
     });
 
     test("opens question set selector when clicking on set card", async ({ page }) => {
       await page.goto("/");
 
       // Click on the question set card
-      await page.getByText("Christmas 2025").click();
+      await page.getByText("Example Quiz").click();
 
       // Selector modal should open
       await expect(page.getByRole("heading", { name: "Choose Question Set" })).toBeVisible();
@@ -32,14 +32,14 @@ test.describe("Question Sets", () => {
       await page.goto("/");
 
       // Open selector
-      await page.locator("button").filter({ hasText: "Christmas 2025" }).first().click();
+      await page.locator("button").filter({ hasText: "Example Quiz" }).first().click();
 
       // Modal should be visible
       await expect(page.getByRole("heading", { name: "Choose Question Set" })).toBeVisible();
 
-      // Both question sets should be visible as buttons (use more specific selectors)
-      // Christmas 2025 should show "Selected" badge since it's the current set
-      await expect(page.getByRole("button", { name: /Christmas 2025.*Selected/ })).toBeVisible();
+      // Multiple question sets should be visible as buttons (use more specific selectors)
+      // Example Quiz should show "Selected" badge since it's the current set
+      await expect(page.getByRole("button", { name: /Example Quiz.*Selected/ })).toBeVisible();
       // Football Quiz should be visible without "Selected"
       await expect(page.getByRole("button", { name: /Football Quiz 2025.*Test your knowledge/ })).toBeVisible();
     });
@@ -48,7 +48,7 @@ test.describe("Question Sets", () => {
       await page.goto("/");
 
       // Open selector
-      await page.getByText("Christmas 2025").click();
+      await page.getByText("Example Quiz").click();
 
       // Select Football Quiz
       await page.getByRole("button", { name: /Football Quiz 2025/ }).click();
@@ -62,9 +62,9 @@ test.describe("Question Sets", () => {
       await page.goto("/");
 
       // Open selector
-      await page.getByText("Christmas 2025").click();
+      await page.getByText("Example Quiz").click();
 
-      // Christmas 2025 should show as selected
+      // Example Quiz should show as selected
       await expect(page.getByText("Selected")).toBeVisible();
     });
 
@@ -72,7 +72,7 @@ test.describe("Question Sets", () => {
       await page.goto("/");
 
       // Open selector
-      await page.getByText("Christmas 2025").click();
+      await page.getByText("Example Quiz").click();
       await expect(page.getByRole("heading", { name: "Choose Question Set" })).toBeVisible();
 
       // Click close
@@ -86,7 +86,7 @@ test.describe("Question Sets", () => {
       await page.goto("/");
 
       // Open selector
-      await page.getByText("Christmas 2025").click();
+      await page.getByText("Example Quiz").click();
       await expect(page.getByRole("heading", { name: "Choose Question Set" })).toBeVisible();
 
       // Click outside the modal
@@ -101,21 +101,21 @@ test.describe("Question Sets", () => {
     test("quiz loads categories from selected question set", async ({ page }) => {
       await page.goto("/");
 
-      // Start quiz with Christmas 2025 (default)
+      // Start quiz with Example Quiz (default)
       await page.getByRole("button", { name: "Start Quiz" }).click();
       await page.getByRole("textbox").fill("Test Team");
       await page.getByRole("button", { name: "Add" }).click();
       await page.getByRole("button", { name: "Start Quiz" }).click();
 
-      // Should show Christmas Movies category
-      await expect(page.getByRole("heading", { name: "Christmas Movies" })).toBeVisible();
+      // Should show General Knowledge category (first category in Example Quiz)
+      await expect(page.getByRole("heading", { name: "General Knowledge" })).toBeVisible();
     });
 
     test("switching question set changes quiz categories", async ({ page }) => {
       await page.goto("/");
 
       // Switch to Football Quiz
-      await page.getByText("Christmas 2025").click();
+      await page.getByText("Example Quiz").click();
       await page.getByRole("button", { name: /Football Quiz 2025/ }).click();
 
       // Start quiz
@@ -125,7 +125,7 @@ test.describe("Question Sets", () => {
       await page.getByRole("button", { name: "Start Quiz" }).click();
 
       // Should show Premier League category
-      await expect(page.getByRole("heading", { name: "Premier League" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Premier League", exact: true })).toBeVisible();
     });
   });
 
@@ -158,7 +158,7 @@ test.describe("Question Sets", () => {
       await page.getByRole("button", { name: "Start Section" }).click();
 
       // Verify we're on quiz page
-      await expect(page.getByText("Question 1 of 15")).toBeVisible();
+      await expect(page.getByText("Question 1 of 5")).toBeVisible();
 
       // Change question set via settings
       await page.getByRole("button", { name: "Settings" }).click();
@@ -203,7 +203,7 @@ test.describe("Question Sets", () => {
       await page.goto("/");
 
       // Switch to Football Quiz
-      await page.getByText("Christmas 2025").click();
+      await page.getByText("Example Quiz").click();
       await page.getByRole("button", { name: /Football Quiz 2025/ }).click();
 
       // Reload page
@@ -217,7 +217,7 @@ test.describe("Question Sets", () => {
       await page.goto("/");
 
       // Switch to Football Quiz and start quiz
-      await page.locator("button").filter({ hasText: "Christmas 2025" }).first().click();
+      await page.locator("button").filter({ hasText: "Example Quiz" }).first().click();
       await page.locator("button").filter({ hasText: /Football Quiz 2025.*3 categories/ }).click();
 
       await page.getByRole("button", { name: "Start Quiz" }).click();
