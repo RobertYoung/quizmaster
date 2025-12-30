@@ -33,11 +33,13 @@ export default function Quiz({ onFinish }: QuizProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return
 
-      // Handle section intro dismissal
+      // Handle section intro navigation
       if (state.showingSectionIntro) {
         if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault()
           dispatch({ type: 'DISMISS_SECTION_INTRO' })
+        } else if (e.key === 'ArrowLeft') {
+          dispatch({ type: 'PREVIOUS_QUESTION' })
         } else if (e.key === 's') {
           setShowScoreboard((prev) => !prev)
         }
@@ -99,6 +101,8 @@ export default function Quiz({ onFinish }: QuizProps) {
             category={currentCategory}
             onStart={() => dispatch({ type: 'DISMISS_SECTION_INTRO' })}
             onShowScoreboard={() => setShowScoreboard(true)}
+            onPrevious={() => dispatch({ type: 'PREVIOUS_QUESTION' })}
+            canGoPrevious={state.currentCategoryIndex > 0}
           />
         </AnimatePresence>
 
