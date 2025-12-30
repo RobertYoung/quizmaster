@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import { useScore } from '../context/ScoreContext'
 import { useQuiz } from '../context/QuizContext'
 
@@ -10,6 +12,37 @@ export default function Results({ onRestart }: ResultsProps) {
   const { getLeaderboard } = useScore()
   const { dispatch } = useQuiz()
   const leaderboard = getLeaderboard()
+
+  useEffect(() => {
+    // Fire confetti from both sides
+    const duration = 3000
+    const end = Date.now() + duration
+
+    const frame = () => {
+      // Left side
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.6 },
+        colors: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+      })
+      // Right side
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.6 },
+        colors: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+      })
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame)
+      }
+    }
+
+    frame()
+  }, [])
 
   const handleRestart = () => {
     dispatch({ type: 'RESET_QUIZ' })

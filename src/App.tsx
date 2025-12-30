@@ -4,13 +4,14 @@ import { ScoreProvider } from './context/ScoreContext'
 import Home from './pages/Home'
 import Setup from './pages/Setup'
 import Quiz from './pages/Quiz'
+import PreResults from './pages/PreResults'
 import Results from './pages/Results'
 import SettingsMenu from './components/settings/SettingsMenu'
 
-type Page = 'home' | 'setup' | 'quiz' | 'results'
+type Page = 'home' | 'setup' | 'quiz' | 'pre-results' | 'results'
 
 const STORAGE_KEY = 'quizmaster-page-state'
-const VALID_PAGES: Page[] = ['home', 'setup', 'quiz', 'results']
+const VALID_PAGES: Page[] = ['home', 'setup', 'quiz', 'pre-results', 'results']
 
 function getInitialPage(): Page {
   try {
@@ -39,7 +40,9 @@ function App() {
       case 'setup':
         return <Setup onStartQuiz={() => setCurrentPage('quiz')} onBack={() => setCurrentPage('home')} />
       case 'quiz':
-        return <Quiz onFinish={() => setCurrentPage('results')} />
+        return <Quiz onFinish={() => setCurrentPage('pre-results')} />
+      case 'pre-results':
+        return <PreResults onRevealResults={() => setCurrentPage('results')} />
       case 'results':
         return <Results onRestart={() => setCurrentPage('home')} />
       default:

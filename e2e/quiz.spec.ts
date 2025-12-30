@@ -86,6 +86,14 @@ test.describe("Quizmaster App", () => {
       await page.getByRole("button", { name: /Next/ }).click();
     }
 
+    // Pre-results page
+    await expect(page.getByText("That's a wrap!")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Quiz Complete" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reveal Scores" })).toBeVisible();
+
+    // Navigate to results
+    await page.getByRole("button", { name: "Reveal Scores" }).click();
+
     // Results page
     await expect(page.getByRole("heading", { name: "Quiz Complete!" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Final Standings" })).toBeVisible();
@@ -489,6 +497,138 @@ test.describe("Quizmaster App", () => {
       // Should show section intro for next category (Christmas Music)
       await expect(page.getByText("Coming Up")).toBeVisible();
       await expect(page.getByRole("heading", { name: "Christmas Music" })).toBeVisible();
+    });
+  });
+
+  test.describe("Pre-Results Page", () => {
+    async function navigateToPreResults(page: import("@playwright/test").Page) {
+      await page.goto("/");
+
+      // Setup quiz with one team
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+      await page.getByRole("textbox").fill("Test Team");
+      await page.getByRole("button", { name: "Add" }).click();
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+
+      // Navigate through all questions
+      // Christmas Movies (5 questions)
+      await page.getByRole("button", { name: "Start Section" }).click();
+      for (let i = 0; i < 5; i++) {
+        await page.getByRole("button", { name: /Next/ }).click();
+      }
+
+      // Christmas Music (5 questions)
+      await page.getByRole("button", { name: "Start Section" }).click();
+      for (let i = 0; i < 5; i++) {
+        await page.getByRole("button", { name: /Next/ }).click();
+      }
+
+      // Holiday Traditions (5 questions)
+      await page.getByRole("button", { name: "Start Section" }).click();
+      for (let i = 0; i < 5; i++) {
+        await page.getByRole("button", { name: /Next/ }).click();
+      }
+    }
+
+    test("displays pre-results page after completing all questions", async ({ page }) => {
+      await navigateToPreResults(page);
+
+      // Pre-results page should be visible
+      await expect(page.getByText("That's a wrap!")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Quiz Complete" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Reveal Scores" })).toBeVisible();
+      await expect(page.getByText("Press Space or Enter to reveal scores")).toBeVisible();
+    });
+
+    test("displays quiz summary on pre-results page", async ({ page }) => {
+      await page.goto("/");
+
+      // Setup quiz with two teams
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+      await page.getByRole("textbox").fill("Team Alpha");
+      await page.getByRole("button", { name: "Add" }).click();
+      await page.getByRole("textbox").fill("Team Beta");
+      await page.getByRole("button", { name: "Add" }).click();
+      await page.getByRole("button", { name: "Start Quiz" }).click();
+
+      // Navigate through all questions
+      await page.getByRole("button", { name: "Start Section" }).click();
+      for (let i = 0; i < 5; i++) {
+        await page.getByRole("button", { name: /Next/ }).click();
+      }
+      await page.getByRole("button", { name: "Start Section" }).click();
+      for (let i = 0; i < 5; i++) {
+        await page.getByRole("button", { name: /Next/ }).click();
+      }
+      await page.getByRole("button", { name: "Start Section" }).click();
+      for (let i = 0; i < 5; i++) {
+        await page.getByRole("button", { name: /Next/ }).click();
+      }
+
+      // Check summary displays correct team count
+      await expect(page.getByText("15 questions answered by 2 teams")).toBeVisible();
+    });
+
+    test("navigates to results with Reveal Scores button", async ({ page }) => {
+      await navigateToPreResults(page);
+
+      // Click Reveal Scores button
+      await page.getByRole("button", { name: "Reveal Scores" }).click();
+
+      // Should now be on results page
+      await expect(page.getByRole("heading", { name: "Quiz Complete!" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Final Standings" })).toBeVisible();
+    });
+
+    test("navigates to results with Enter key", async ({ page }) => {
+      await navigateToPreResults(page);
+
+      // Wait for pre-results page to be visible
+      await expect(page.getByRole("button", { name: "Reveal Scores" })).toBeVisible();
+
+      // Press Enter to reveal scores
+      await page.keyboard.press("Enter");
+
+      // Should now be on results page
+      await expect(page.getByRole("heading", { name: "Quiz Complete!" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Final Standings" })).toBeVisible();
+    });
+
+    test("navigates to results with Space key", async ({ page }) => {
+      await navigateToPreResults(page);
+
+      // Wait for pre-results page to be visible
+      await expect(page.getByRole("button", { name: "Reveal Scores" })).toBeVisible();
+
+      // Press Space to reveal scores
+      await page.keyboard.press("Space");
+
+      // Should now be on results page
+      await expect(page.getByRole("heading", { name: "Quiz Complete!" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Final Standings" })).toBeVisible();
+    });
+
+    test("settings menu is accessible from pre-results page", async ({ page }) => {
+      await navigateToPreResults(page);
+
+      // Settings should be visible
+      await expect(page.getByRole("button", { name: "Settings" })).toBeVisible();
+
+      // Can open settings
+      await page.getByRole("button", { name: "Settings" }).click();
+      await expect(page.getByRole("button", { name: "Reset Game" })).toBeVisible();
+    });
+
+    test("reset game works from pre-results page", async ({ page }) => {
+      await navigateToPreResults(page);
+
+      // Reset game
+      await page.getByRole("button", { name: "Settings" }).click();
+      await page.getByRole("button", { name: "Reset Game" }).click();
+      await page.getByRole("button", { name: "Reset", exact: true }).click();
+
+      // Should be back on home page
+      await expect(page.getByRole("heading", { name: "Quizmaster" })).toBeVisible();
     });
   });
 });
