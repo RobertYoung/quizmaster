@@ -90,6 +90,13 @@ export default function QuestionCard({ question, isAnswerRevealed, categoryColor
       >
         <p className="text-emerald-100 text-lg mb-2">Answer</p>
         <p className="text-answer font-bold text-white">{question.answer}</p>
+        {question.answerImageUrl && (
+          <img
+            src={question.answerImageUrl}
+            alt={question.answerImageAlt || 'Answer image'}
+            className="max-h-64 mx-auto rounded-xl shadow-lg mt-4"
+          />
+        )}
         {question.funFact && (
           <p className="text-emerald-100 mt-4 text-lg">
             Fun fact: {question.funFact}

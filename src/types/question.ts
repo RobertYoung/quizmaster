@@ -8,6 +8,8 @@ export interface BaseQuestion {
   hint?: string
   funFact?: string
   sourceUrl?: string
+  answerImageUrl?: string
+  answerImageAlt?: string
 }
 
 export interface TextQuestion extends BaseQuestion {
@@ -25,6 +27,7 @@ export interface PictureQuestion extends BaseQuestion {
   type: 'picture'
   imageUrl: string
   imageAlt?: string
+  acceptableAnswers?: string[]
 }
 
 export type Question = TextQuestion | MultipleChoiceQuestion | PictureQuestion
